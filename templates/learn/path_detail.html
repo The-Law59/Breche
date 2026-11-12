@@ -1,0 +1,21 @@
+{% extends "base.html" %}{% load breche %}
+{% block title %}{{ path.title }}{% endblock %}
+{% block content %}
+<a class="link" href="{% url 'path_list' %}">← Tous les parcours</a>
+<section class="section cat-{{ path.color }}">
+  <span class="tag cat" style="align-self:start"><span class="cat-dot"></span>{{ path.get_level_display }}</span>
+  <h1>{{ path.title }}</h1>
+  <p class="lede">{{ path.summary }}</p>
+  {% if user.is_authenticated %}
+    <div class="row"><div class="bar" style="flex:1;max-width:320px"><span style="width:{{ done|percent:total }}%"></span></div><span class="mono muted num" style="font-size:13px">{{ done }}/{{ total }}</span></div>
+  {% endif %}
+  {% if next_lesson %}<a class="btn primary" style="align-self:start" href="{{ next_lesson.get_absolute_url }}">{% if done %}Continuer : {{ next_lesson.title }}{% else %}Commencer le parcours{% endif %}</a>{% endif %}
+</section>
+<div class="panel">
+  <ul class="feed">
+    {% for l in lessons %}
+      <li><span class="step {% if l.is_done %}done{% endif %}" style="display:contents"><span class="ring"></span></span><a href="{{ l.get_absolute_url }}"><b>{{ l.title }}</b></a>{% if l.challenge %}<span class="tag">défi : {{ l.challenge.points }} pts</span>{% endif %}<span class="end">{{ l.minutes }} min</span></li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

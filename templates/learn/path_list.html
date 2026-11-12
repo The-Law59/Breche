@@ -1,0 +1,26 @@
+{% extends "base.html" %}{% load breche %}
+{% block title %}Parcours{% endblock %}
+{% block content %}
+<section class="section">
+  <div><span class="eyebrow">Apprendre</span><h1>Parcours guidés</h1></div>
+  <p class="lede">Chaque parcours enchaîne des leçons courtes. La plupart se terminent par un défi d'application : c'est là que tu gagnes des points. Terminer un parcours ajoute un badge à ton profil.</p>
+</section>
+<section class="paths">
+  {% for p in paths %}
+  <article class="panel path cat-{{ p.color }}">
+    <div class="section-head"><span class="tag cat"><span class="cat-dot"></span>{{ p.get_level_display }}</span>{% if user.is_authenticated %}<span class="eyebrow num">{{ p.done }}/{{ p.n }} leçons</span>{% else %}<span class="eyebrow num">{{ p.n }} leçons</span>{% endif %}</div>
+    <h2><a href="{{ p.get_absolute_url }}">{{ p.title }}</a></h2>
+    <p class="muted">{{ p.summary }}</p>
+    {% if user.is_authenticated %}<div class="bar"><span style="width:{{ p.done|percent:p.n }}%"></span></div>{% endif %}
+    <div class="steps">
+      {% for l in p.lesson_list %}
+        <a class="step {% if l.is_done %}done{% endif %}" href="{{ l.get_absolute_url }}"><span class="ring"></span><span>{{ l.title }}</span><small>{{ l.minutes }} min</small></a>
+      {% endfor %}
+    </div>
+    <a class="btn {% if p.done and p.done < p.n %}primary{% endif %}" href="{{ p.get_absolute_url }}" style="align-self:start">{% if p.done == p.n and p.n %}Revoir{% elif p.done %}Reprendre{% else %}Commencer{% endif %}</a>
+  </article>
+  {% empty %}
+  <p class="muted">Aucun parcours publié pour l'instant.</p>
+  {% endfor %}
+</section>
+{% endblock %}

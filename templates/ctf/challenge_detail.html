@@ -1,0 +1,83 @@
+{% extends "base.html" %}{% load breche humanize %}
+{% block title %}{{ challenge.title }}{% endblock %}
+{% block content %}
+<a class="link" href="{% url 'challenge_list' %}">← Tous les défis</a>
+<div class="detail cat-{{ challenge.category.color }}">
+  <article class="stack" style="gap:22px">
+    <header class="stack" style="gap:10px">
+      <span class="eyebrow" style="color:var(--cc)">{{ challenge.category.name }} · {{ challenge.get_difficulty_display }}{% if challenge.author %} · par {{ challenge.author }}{% endif %}</span>
+      <h1>{{ challenge.title }}</h1>
+      <div class="row"><span class="tag num">{{ challenge.points }} pts</span><span class="tag num">{{ solve_count }} résolution{{ solve_count|pluralize }}</span>{% if is_solved %}<span class="tag ok">✓ Résolu</span>{% endif %}</div>
+    </header>
+
+    <div class="prose">{{ challenge.description|markdown }}</div>
+
+    {% if challenge.connection_info %}
+    <div class="stack" style="gap:8px"><span class="eyebrow">Accès</span><div class="access">{{ challenge.connection_info }}</div></div>
+    {% endif %}
+
+    {% if files %}
+    <div class="stack" style="gap:8px"><span class="eyebrow">Fichiers</span>
+      <div class="files">{% for f in files %}{% if user.is_authenticated %}<a class="file" href="{% url 'download_file' f.pk %}">↓ {{ f.display_name }}</a>{% else %}<span class="file muted">{{ f.display_name }}</span>{% endif %}{% endfor %}</div>
+      {% if not user.is_authenticated %}<p class="muted" style="font-size:13px"><a class="link" href="{% url 'login' %}?next={{ request.path }}">Connecte-toi</a> pour télécharger les fichiers.</p>{% endif %}
+    </div>
+    {% endif %}
+
+    {% if hints %}
+    <div class="stack" id="indices" style="gap:8px"><span class="eyebrow">Indices</span>
+      {% for h in hints %}
+        {% if h.is_unlocked %}
+          <div class="hint open"><div class="prose" style="font-size:14px">{{ h.text|markdown }}</div></div>
+        {% else %}
+          <div class="hint"><span>Indice {{ forloop.counter }}{% if h.cost %} · coûte {{ h.cost }} pts{% else %} · gratuit{% endif %}</span>
+            {% if user.is_authenticated %}<form method="post" action="{% url 'unlock_hint' challenge.slug h.pk %}">{% csrf_token %}<button class="btn sm">Débloquer</button></form>{% endif %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="panel pad stack">
+      <h2>Valider le flag</h2>
+      {% if not user.is_authenticated %}
+        <p class="muted"><a class="link" href="{% url 'login' %}?next={{ request.path }}">Connecte-toi</a> ou <a class="link" href="{% url 'signup' %}">crée un compte</a> pour soumettre un flag.</p>
+      {% elif is_solved %}
+        <p>Tu as déjà résolu ce défi. Bien joué !</p>
+      {% else %}
+        <form class="flagform" method="post" action="{% url 'submit_flag' challenge.slug %}" autocomplete="off">{% csrf_token %}
+          <label class="sr-only" for="flag">Flag</label>
+          <input class="input" id="flag" name="flag" placeholder="{{ FLAG_FORMAT }}" maxlength="200" required spellcheck="false">
+          <button class="btn primary">Valider</button>
+        </form>
+      {% endif %}
+    </div>
+  </article>
+
+  <aside class="side">
+    <div class="panel pad stack">
+      <span class="eyebrow">En bref</span>
+      <dl class="kv">
+        <dt>Catégorie</dt><dd>{{ challenge.category.name }}</dd>
+        <dt>Difficulté</dt><dd>{% difficulty challenge.difficulty %}</dd>
+        <dt>Points</dt><dd>{{ challenge.points }}</dd>
+        <dt>Résolutions</dt><dd>{{ solve_count }}</dd>
+      </dl>
+    </div>
+    <div class="panel stack" style="gap:0">
+      <div class="pad" style="padding-bottom:6px"><span class="eyebrow">Premiers à l'avoir résolu</span></div>
+      <ul class="feed">
+        {% for s in first_solvers %}
+          <li><span class="mono num muted">{{ forloop.counter }}</span><a href="{{ s.user.get_absolute_url }}">{{ s.user.username }}</a><time>{{ s.created_at|naturaltime }}</time></li>
+        {% empty %}
+          <li class="empty">Personne pour l'instant. À toi de jouer.</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% if lessons %}
+    <div class="panel pad stack"><span class="eyebrow">Pour t'aider</span>
+      {% for l in lessons %}<a class="link" href="{{ l.get_absolute_url }}">{{ l.path.title }} · {{ l.title }}</a>{% endfor %}
+    </div>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

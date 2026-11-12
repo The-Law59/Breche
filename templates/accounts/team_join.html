@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Mon équipe{% endblock %}
+{% block content %}
+<section class="section">
+  <div><span class="eyebrow">Jouer à plusieurs</span><h1>Mon équipe</h1></div>
+  <p class="lede">Tu n'es dans aucune équipe. Tes points restent les tiens : une équipe additionne simplement les défis résolus par ses membres. {{ max_size }} membres maximum.</p>
+</section>
+<div class="forms-2">
+  <form class="panel pad stack" method="post">{% csrf_token %}
+    <h2>Créer une équipe</h2>
+    <p class="muted" style="font-size:14px">Tu en deviens le capitaine et reçois un code à partager.</p>
+    {% for field in create_form %}{% include "_field.html" %}{% endfor %}
+    <button class="btn primary" name="create" value="1" style="align-self:start">Créer l'équipe</button>
+  </form>
+  <form class="panel pad stack" method="post">{% csrf_token %}
+    <h2>Rejoindre une équipe</h2>
+    <p class="muted" style="font-size:14px">Demande le code d'invitation au capitaine.</p>
+    {% for field in join_form %}{% include "_field.html" %}{% endfor %}
+    <button class="btn" name="join" value="1" style="align-self:start">Rejoindre</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}{% load breche %}
+{% block title %}{{ lesson.title }}{% endblock %}
+{% block content %}
+<div class="lesson-layout cat-{{ lesson.path.color }}">
+  <nav class="panel lesson-nav stack" aria-label="Leçons du parcours">
+    <a class="link" href="{{ lesson.path.get_absolute_url }}">← {{ lesson.path.title }}</a>
+    <div class="steps">
+      {% for l in lessons %}
+        <a class="step {% if l.pk in done_ids %}done{% elif l.pk == lesson.pk %}now{% endif %}" href="{{ l.get_absolute_url }}" {% if l.pk == lesson.pk %}aria-current="page"{% endif %}><span class="ring"></span><span>{{ l.title }}</span><small></small></a>
+      {% endfor %}
+    </div>
+  </nav>
+  <article class="stack" style="gap:22px">
+    <header class="stack" style="gap:8px">
+      <span class="eyebrow">Leçon {{ position }}/{{ lessons|length }} · {{ lesson.minutes }} min</span>
+      <h1>{{ lesson.title }}</h1>
+    </header>
+    <div class="prose">{{ lesson.content|markdown }}</div>
+
+    {% if lesson.challenge and lesson.challenge.is_published %}
+      <div class="panel pad stack cat-{{ lesson.challenge.category.color }}">
+        <span class="eyebrow">À toi de jouer</span>
+        <h2>{{ lesson.challenge.title }}</h2>
+        <p class="muted">Applique ce que tu viens de lire : {{ lesson.challenge.category.name }}, {{ lesson.challenge.points }} points.</p>
+        <a class="btn primary" style="align-self:start" href="{{ lesson.challenge.get_absolute_url }}">Ouvrir le défi</a>
+      </div>
+    {% endif %}
+
+    <div class="pager">
+      {% if prev %}<a class="btn ghost" href="{{ prev.get_absolute_url }}">← {{ prev.title }}</a>{% else %}<span></span>{% endif %}
+      {% if user.is_authenticated %}
+        {% if is_done %}
+          {% if next %}<a class="btn" href="{{ next.get_absolute_url }}">{{ next.title }} →</a>{% else %}<span class="tag ok">✓ Parcours terminé</span>{% endif %}
+        {% else %}
+          <form method="post" action="{% url 'complete_lesson' lesson.path.slug lesson.slug %}">{% csrf_token %}<button class="btn primary">J'ai compris{% if next %}, leçon suivante{% endif %} →</button></form>
+        {% endif %}
+      {% elif next %}
+        <a class="btn" href="{{ next.get_absolute_url }}">{{ next.title }} →</a>
+      {% endif %}
+    </div>
+  </article>
+</div>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Réglages{% endblock %}
+{% block content %}
+<form class="panel form-card stack" method="post" style="gap:16px;max-width:520px">{% csrf_token %}
+  <div><span class="eyebrow">{{ user.username }}</span><h1>Réglages du profil</h1></div>
+  {% for field in form %}{% include "_field.html" %}{% endfor %}
+  <div class="row"><button class="btn primary">Enregistrer</button><a class="btn ghost" href="{% url 'password_change' %}">Changer de mot de passe</a></div>
+</form>
+{% endblock %}

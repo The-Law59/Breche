@@ -1,0 +1,51 @@
+{% extends "base.html" %}{% load humanize %}
+{% block title %}Classement{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="section-head">
+    <div><span class="eyebrow">Classement général</span><h1>Classement</h1></div>
+    <nav class="tabs" aria-label="Type de classement">
+      <a href="{% url 'scoreboard' %}" {% if view == 'joueurs' %}aria-current="page"{% endif %}>Joueurs</a>
+      <a href="{% url 'scoreboard' %}?vue=equipes" {% if view == 'equipes' %}aria-current="page"{% endif %}>Équipes</a>
+    </nav>
+  </div>
+  <p class="lede">{% if view == 'joueurs' %}Score = points des défis résolus moins le coût des indices. À égalité, le premier à avoir atteint son score passe devant.{% else %}Chaque défi compte une seule fois par équipe, même si plusieurs membres l'ont résolu.{% endif %}</p>
+</section>
+
+<div class="panel table-wrap">
+  <table class="board">
+  {% if view == 'joueurs' %}
+    <thead><tr><th>#</th><th>Joueur</th><th>Équipe</th><th class="hide-sm">Établissement</th><th class="r">Défis</th><th class="r">Score</th></tr></thead>
+    <tbody>
+    {% for p in players %}
+      <tr {% if p.pk == user.pk %}class="you"{% endif %}>
+        <td class="rank num">{{ forloop.counter }}</td>
+        <td><a href="{{ p.get_absolute_url }}">{{ p.username }}</a></td>
+        <td>{% if p.team %}<a href="{{ p.team.get_absolute_url }}" style="font-weight:500">{{ p.team.name }}</a>{% else %}<span class="muted">–</span>{% endif %}</td>
+        <td class="muted hide-sm">{{ p.school|default:"–" }}</td>
+        <td class="r num">{{ p.solve_count }}</td>
+        <td class="r num"><b>{{ p.solve_points|add:0|intcomma }}</b>{% if p.hint_points %} <span class="muted">−{{ p.hint_points }}</span>{% endif %}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="6" class="empty">Le classement est vide. Résous un défi pour y apparaître.</td></tr>
+    {% endfor %}
+    </tbody>
+  {% else %}
+    <thead><tr><th>#</th><th>Équipe</th><th class="r">Membres</th><th class="r">Défis</th><th class="r">Score</th></tr></thead>
+    <tbody>
+    {% for r in teams %}
+      <tr {% if r.team.pk == user.team_id %}class="you"{% endif %}>
+        <td class="rank num">{{ forloop.counter }}</td>
+        <td><a href="{{ r.team.get_absolute_url }}">{{ r.team.name }}</a></td>
+        <td class="r num">{{ r.member_count }}</td>
+        <td class="r num">{{ r.solve_count }}</td>
+        <td class="r num"><b>{{ r.score|intcomma }}</b></td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="5" class="empty">Aucune équipe classée pour l'instant.</td></tr>
+    {% endfor %}
+    </tbody>
+  {% endif %}
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Connexion{% endblock %}
+{% block content %}
+<form class="panel form-card stack" method="post" style="gap:16px">{% csrf_token %}
+  <div><span class="eyebrow">Bon retour</span><h1>Connexion</h1></div>
+  {% if form.non_field_errors %}<div class="errorlist">Pseudo ou mot de passe incorrect.</div>{% endif %}
+  {% for field in form %}{% include "_field.html" %}{% endfor %}
+  <input type="hidden" name="next" value="{{ next }}">
+  <button class="btn primary">Se connecter</button>
+  <p class="muted" style="font-size:14px">Pas encore de compte ? <a class="link" href="{% url 'signup' %}">Inscris-toi</a></p>
+</form>
+{% endblock %}

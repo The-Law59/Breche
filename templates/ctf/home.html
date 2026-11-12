@@ -1,0 +1,95 @@
+{% extends "base.html" %}{% load breche humanize %}
+{% block title %}Accueil{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="hero-copy">
+    <span class="eyebrow">Capture the flag · pour débutants et étudiants</span>
+    <h1>Trouve la faille. Capture le flag.</h1>
+    <p class="lede">Des défis de sécurité classés par difficulté, des parcours pour apprendre pas à pas, et un classement pour te mesurer aux autres, seul ou en équipe.</p>
+    <div class="row">
+      {% if user.is_authenticated %}
+        <a class="btn primary" href="{% url 'challenge_list' %}">Voir les défis</a>
+        <a class="btn" href="{% url 'path_list' %}">Reprendre un parcours</a>
+      {% else %}
+        <a class="btn primary" href="{% url 'signup' %}">Créer un compte gratuit</a>
+        <a class="btn" href="{% url 'path_list' %}">Découvrir les parcours</a>
+      {% endif %}
+    </div>
+  </div>
+  <div class="term" aria-hidden="true"><div class="term-bar"><i></i><i></i><i></i><span>joueur@breche:~</span></div>
+<pre><span class="p">$</span> cat message.txt
+EUFK{f3vdu_hvw_idflo3}
+<span class="p">$</span> echo "EUFK{f3vdu_hvw_idflo3}" | caesar -3
+<span class="g">BRCH{c3sar_est_facil3}</span>
+<span class="p">$</span> <span class="d"># Bravo, tu viens de casser ton premier chiffrement.</span></pre></div>
+</section>
+
+{% if user.is_authenticated %}
+<section class="kpis">
+  <div class="panel kpi"><span class="eyebrow">Score</span><b class="num">{{ my_score|intcomma }}</b><small>points</small></div>
+  <div class="panel kpi"><span class="eyebrow">Défis résolus</span><b class="num">{{ solved_count }}/{{ total_challenges }}</b><div class="bar"><span style="width:{{ solved_count|percent:total_challenges }}%"></span></div></div>
+  <div class="panel kpi"><span class="eyebrow">Rang</span><b class="num">{% if rank %}#{{ rank }}{% else %}–{% endif %}</b><small>{% if rank %}sur {{ player_count }} joueurs classés{% else %}résous un défi pour entrer au classement{% endif %}</small></div>
+  <div class="panel kpi"><span class="eyebrow">Équipe</span><b style="font-size:1.15rem">{% if user.team %}<a class="link" href="{{ user.team.get_absolute_url }}">{{ user.team.name }}</a>{% else %}Solo{% endif %}</b><small>{% if not user.team %}<a class="link" href="{% url 'my_team' %}">Créer ou rejoindre</a>{% else %}&nbsp;{% endif %}</small></div>
+</section>
+
+{% if next_challenges %}
+<section class="section">
+  <div class="section-head"><div><span class="eyebrow">Suggestions</span><h2>Prochains défis pour toi</h2></div><a class="link" href="{% url 'challenge_list' %}">Tous les défis →</a></div>
+  <div class="grid">{% for c in next_challenges %}{% include "ctf/_card.html" %}{% endfor %}</div>
+</section>
+{% endif %}
+{% endif %}
+
+<section class="section">
+  <div class="section-head"><div><span class="eyebrow">{{ total_challenges }} défi{{ total_challenges|pluralize }}</span><h2>Catégories</h2></div></div>
+  <div class="cats">
+    {% for c in categories %}
+      <a class="panel catcard cat-{{ c.color }}" href="{% url 'challenge_list' %}#{{ c.slug }}">
+        <div class="row"><span class="tag cat"><span class="cat-dot"></span>{{ c.name }}</span><span class="mono muted num" style="font-size:12px">{% if user.is_authenticated %}{{ c.done }}/{% endif %}{{ c.total }}</span></div>
+        {% if c.description %}<p class="muted" style="font-size:13.5px">{{ c.description }}</p>{% endif %}
+        {% if user.is_authenticated %}<div class="bar"><span style="width:{{ c.done|percent:c.total }}%"></span></div>{% endif %}
+      </a>
+    {% empty %}
+      <p class="muted">Aucun défi publié pour l'instant.</p>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="two">
+  <div class="section">
+    <div class="section-head"><div><span class="eyebrow">Activité</span><h2>Dernières résolutions</h2></div></div>
+    <ul class="panel feed">
+      {% for s in recent_solves %}
+        <li class="cat-{{ s.challenge.category.color }}"><span class="cat-dot"></span><span><a href="{{ s.user.get_absolute_url }}"><b>{{ s.user.username }}</b></a> a résolu <a href="{{ s.challenge.get_absolute_url }}">{{ s.challenge.title }}</a></span>{% if s.is_first_blood %}<span class="blood">PREMIER</span>{% endif %}<time datetime="{{ s.created_at|date:'c' }}">{{ s.created_at|naturaltime }}</time></li>
+      {% empty %}
+        <li class="empty">Personne n'a encore résolu de défi. La première place est libre.</li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="section">
+    <div class="section-head"><div><span class="eyebrow">Annonces</span><h2>Nouveautés</h2></div></div>
+    <ul class="panel feed">
+      {% for a in announcements %}
+        <li style="display:block"><div class="row" style="justify-content:space-between"><b>{{ a.title }}</b><time class="mono muted" style="font-size:12px">{{ a.created_at|date:"j M" }}</time></div>{% if a.body %}<div class="prose muted" style="font-size:14px;margin-top:4px">{{ a.body|markdown }}</div>{% endif %}</li>
+      {% empty %}
+        <li class="empty">Aucune annonce.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+
+{% if paths %}
+<section class="section">
+  <div class="section-head"><div><span class="eyebrow">Apprendre</span><h2>Parcours guidés</h2></div><a class="link" href="{% url 'path_list' %}">Tous les parcours →</a></div>
+  <div class="cats">
+    {% for p in paths %}
+      <a class="panel catcard cat-{{ p.color }}" href="{{ p.get_absolute_url }}">
+        <span class="tag cat"><span class="cat-dot"></span>{{ p.get_level_display }}</span>
+        <h3>{{ p.title }}</h3>
+        <p class="muted" style="font-size:13.5px">{{ p.n }} leçon{{ p.n|pluralize }}</p>
+      </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

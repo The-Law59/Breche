@@ -1,0 +1,5 @@
+{% load breche %}<a class="card cat-{{ c.category.color }}{% if c.is_solved %} solved{% endif %}" href="{{ c.get_absolute_url }}" data-cat="{{ c.category.slug }}" data-solved="{% if c.is_solved %}1{% else %}0{% endif %}" data-title="{{ c.title|lower }}">
+  <div class="row"><span class="catname">{{ c.category.name }}</span><span class="pts num">{{ c.points }}</span></div>
+  <h3>{{ c.title }}</h3>
+  <div class="foot"><span>{% difficulty c.difficulty %} {{ c.get_difficulty_display }}</span><span class="num">{{ c.solve_count }} résol.</span></div>
+</a>

@@ -1,0 +1,51 @@
+{% extends "base.html" %}{% load humanize %}
+{% block title %}{{ team.name }}{% endblock %}
+{% block content %}
+<section class="profile-head">
+  <span class="avatar lg">{{ team.name|slice:":2"|upper }}</span>
+  <div class="stack" style="gap:4px;flex:1;min-width:200px">
+    <span class="eyebrow">Équipe</span>
+    <h1>{{ team.name }}</h1>
+    {% if team.description %}<p class="muted">{{ team.description }}</p>{% endif %}
+  </div>
+</section>
+
+<section class="kpis">
+  <div class="panel kpi"><span class="eyebrow">Score</span><b class="num">{{ row.score|default:0|intcomma }}</b></div>
+  <div class="panel kpi"><span class="eyebrow">Rang</span><b class="num">{% if rank %}#{{ rank }}{% else %}–{% endif %}</b></div>
+  <div class="panel kpi"><span class="eyebrow">Défis</span><b class="num">{{ row.solve_count|default:0 }}</b></div>
+  <div class="panel kpi"><span class="eyebrow">Membres</span><b class="num">{{ members|length }}/{{ max_size }}</b></div>
+</section>
+
+{% if is_member %}
+<section class="panel pad stack">
+  <h2>Inviter des coéquipiers</h2>
+  {% if is_captain %}
+    <p class="muted">Partage ce code. Toute personne qui le possède peut rejoindre l'équipe tant qu'il reste de la place.</p>
+    <div class="row"><code style="font-size:1rem;padding:8px 12px">{{ team.invite_code }}</code><button class="btn sm" type="button" data-copy="{{ team.invite_code }}">Copier</button>
+      <form method="post" action="{% url 'team_new_code' %}">{% csrf_token %}<button class="btn sm ghost">Générer un nouveau code</button></form></div>
+  {% else %}
+    <p class="muted">Demande le code d'invitation à ton capitaine, {{ team.captain.username|default:"un membre" }}.</p>
+  {% endif %}
+  <form method="post" action="{% url 'team_leave' %}">{% csrf_token %}<button class="btn sm danger">Quitter l'équipe</button></form>
+</section>
+{% endif %}
+
+<section class="two">
+  <div class="section">
+    <h2>Membres</h2>
+    <div class="panel table-wrap"><table class="board">
+      <thead><tr><th>Joueur</th><th class="r">Score</th></tr></thead>
+      <tbody>{% for m in members %}<tr><td><a href="{{ m.get_absolute_url }}">{{ m.username }}</a>{% if m.pk == team.captain_id %} <span class="tag">capitaine</span>{% endif %}</td><td class="r num">{{ m.score|intcomma }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+  </div>
+  <div class="section">
+    <h2>Activité récente</h2>
+    <ul class="panel feed">
+      {% for s in solves %}
+        <li class="cat-{{ s.challenge.category.color }}"><span class="cat-dot"></span><span><b>{{ s.user.username }}</b> · <a href="{{ s.challenge.get_absolute_url }}">{{ s.challenge.title }}</a></span><time>{{ s.created_at|naturaltime }}</time></li>
+      {% empty %}<li class="empty">Aucune résolution pour l'instant.</li>{% endfor %}
+    </ul>
+  </div>
+</section>
+{% endblock %}

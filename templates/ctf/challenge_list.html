@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Défis{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="section-head">
+    <div><span class="eyebrow">{% if user.is_authenticated %}{{ solved_count }}/{{ challenges|length }} résolus{% else %}{{ challenges|length }} défis{% endif %}</span><h1>Défis</h1></div>
+    <label class="sr-only" for="challenge-search">Rechercher un défi</label>
+    <input class="input search" id="challenge-search" type="search" placeholder="Rechercher un défi">
+  </div>
+  <p class="lede">Chaque défi cache un flag au format <code>{{ FLAG_FORMAT }}</code>. Trouve-le, colle-le dans le champ de validation et gagne les points. Bloqué ? Les parcours expliquent les notions de base.</p>
+  <div class="filters" role="group" aria-label="Filtrer par catégorie">
+    <button class="chip" type="button" data-filter-cat="all" aria-pressed="true">Toutes</button>
+    {% for cat in categories %}
+      <button class="chip cat-{{ cat.color }}" type="button" data-filter-cat="{{ cat.slug }}" id="f-{{ cat.slug }}" aria-pressed="false"><span class="cat-dot"></span>{{ cat.name }} <span class="num muted">{{ cat.total }}</span></button>
+    {% endfor %}
+  </div>
+  {% if user.is_authenticated %}
+  <div class="filters" role="group" aria-label="Filtrer par statut">
+    <button class="chip" type="button" data-filter-status="all" aria-pressed="true">Tous</button>
+    <button class="chip" type="button" data-filter-status="todo" aria-pressed="false">À faire</button>
+    <button class="chip" type="button" data-filter-status="done" aria-pressed="false">Résolus</button>
+  </div>
+  {% endif %}
+  <div class="grid" id="challenge-grid">
+    {% for c in challenges %}{% include "ctf/_card.html" %}{% endfor %}
+  </div>
+  <p class="muted" id="challenge-empty" {% if challenges %}hidden{% endif %}>Aucun défi ne correspond à ces filtres.</p>
+</section>
+<script>
+  // Ouvre directement une catégorie depuis un lien du type /defis/#crypto
+  addEventListener("DOMContentLoaded", () => { const b = document.getElementById("f-" + location.hash.slice(1)); if (b) b.click(); });
+</script>
+{% endblock %}

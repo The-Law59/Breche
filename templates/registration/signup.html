@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Créer un compte{% endblock %}
+{% block content %}
+<form class="panel form-card stack" method="post" style="gap:16px">{% csrf_token %}
+  <div><span class="eyebrow">Gratuit</span><h1>Créer un compte</h1></div>
+  <p class="muted" style="font-size:14px">Tu pourras jouer seul ou rejoindre une équipe plus tard.</p>
+  {{ form.non_field_errors }}
+  {% for field in form %}{% include "_field.html" %}{% endfor %}
+  <button class="btn primary">Créer mon compte</button>
+  <p class="muted" style="font-size:14px">Déjà inscrit ? <a class="link" href="{% url 'login' %}">Connecte-toi</a></p>
+</form>
+{% endblock %}
