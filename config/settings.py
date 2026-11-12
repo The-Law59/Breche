@@ -121,15 +121,17 @@ BRECHE_TEAM_MAX_SIZE = int(os.environ.get("BRECHE_TEAM_MAX_SIZE", 4))
 BRECHE_MAX_ATTEMPTS_PER_MINUTE = int(os.environ.get("BRECHE_MAX_ATTEMPTS_PER_MINUTE", 8))
 BRECHE_FLAG_FORMAT = os.environ.get("BRECHE_FLAG_FORMAT", "BRCH{...}")
 
+# DJANGO_HTTPS=0 seulement pour un essai en HTTP sur le réseau local, jamais sur Internet.
 if not DEBUG:
-    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-    SECURE_SSL_REDIRECT = env_bool("DJANGO_SECURE_SSL_REDIRECT", True)
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SECURE_HSTS_SECONDS = int(os.environ.get("DJANGO_HSTS_SECONDS", 3600))
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_REFERRER_POLICY = "same-origin"
     X_FRAME_OPTIONS = "DENY"
+    if env_bool("DJANGO_HTTPS", True):
+        SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+        SECURE_SSL_REDIRECT = True
+        SESSION_COOKIE_SECURE = True
+        CSRF_COOKIE_SECURE = True
+        SECURE_HSTS_SECONDS = int(os.environ.get("DJANGO_HSTS_SECONDS", 3600))
 
 LOGGING = {
     "version": 1,

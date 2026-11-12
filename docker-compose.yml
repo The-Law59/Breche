@@ -29,6 +29,18 @@ services:
     volumes:
       - media:/data/media
 
+  # Facultatif : expose le site via un tunnel Cloudflare, sans ouvrir de port sur ta box.
+  # Activation : docker compose --profile tunnel up -d
+  tunnel:
+    image: cloudflare/cloudflared:2024.12.2
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:-}
+    depends_on:
+      - web
+    profiles: ["tunnel"]
+
 volumes:
   pgdata:
   media:
